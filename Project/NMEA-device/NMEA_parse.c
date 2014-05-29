@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include "NMEA_parse.h"
 #define MAX_SENTENCE_LEN 20
 #define MAX_WORD_LEN 10
 #define NMEA_BUFFER_LEN 1024
+#define NMEA_SERIALIZED_LEN 120
 
+//validates the NMEA string, 0=not valid, 1=valid
 int NMEA_validate(char* NMEA_string){
 	int checksum = 0;
 	int i=0;
@@ -25,7 +27,8 @@ int NMEA_validate(char* NMEA_string){
 		return 0;
 }
 
-void NMEA_split_words(char* NMEA_string, char** words){
+//splits a string of NMEA data into a NMEA_sentence
+void NMEA_split_words(char* NMEA_string, NMEA_sentence words){
 	int i=0;
 	int j=0;
 	char* word;
@@ -42,8 +45,9 @@ void NMEA_split_words(char* NMEA_string, char** words){
 	} while(*NMEA_string != '*');
 }
 
-char** NMEA_sentence_new(){
-	char** words = malloc(MAX_SENTENCE_LEN * sizeof(char*));
+//constructor for NMEA_sentence
+NMEA_sentence NMEA_sentence_new(){
+	NMEA_sentence words = malloc(MAX_SENTENCE_LEN * sizeof(char*));
 	int i;
 	for(i=0; i<MAX_SENTENCE_LEN; i++){
 		words[i] = malloc(MAX_WORD_LEN * sizeof(char));
@@ -51,10 +55,31 @@ char** NMEA_sentence_new(){
 	return words;
 }
 
-void NMEA_sentence_destroy(char** words){
+//overwrites all the strings with zeroes
+void NMEA_sentence_empty(NMEA_sentence words){
+	memset(words, 0x00, MAX_SENTENCE_LEN * sizeof(char*));
+	int i;
+	for(i=0; i<MAX_SENTENCE_LEN; i++){
+		memset(words[i], 0x00, MAX_WORD_LEN * sizeof(char));
+	}
+}
+
+//destroys an NMEA_sentence
+void NMEA_sentence_destroy(NMEA_sentence words){
 	int i;
 	for(i=0; i<MAX_SENTENCE_LEN; i++){
 		free(words[i]);
 	}
 	free(words);
+}
+
+//serialize the NMEA_sentence into a string, make sure the string has enough space
+char* NMEA_serialize(NMEA_sentence words, char* serialized){
+	sprintf(serialized,
+		"%s %s\n%s %s",
+		words[GGA_LAT],
+		words[GGA_LAT_NS],
+		words[GGA_LON],
+		words[GGA_LON_EW]
+	);
 }

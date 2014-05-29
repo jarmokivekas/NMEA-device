@@ -19,8 +19,23 @@
 #define GGA_STATION_ID 14
 #define GGA_CHECKSUM 15
 
-void NMEA_sentence_destroy(char** n);
-char** NMEA_sentence_new();
+typedef char** NMEA_sentence;
+
+//destroys an NMEA_sentence
+void NMEA_sentence_destroy(NMEA_sentence n);
+
+//constructor for NMEA_sentence
+NMEA_sentence NMEA_sentence_new();
+
+//validates the NMEA string, 0=not valid, 1=valid
 int NMEA_validate(char* NMEA_string);
-void NMEA_split_words(char* NMEA_string, char** sentence);
+
+//splits a string of NMEA data into a NMEA_sentence
+void NMEA_split_words(char* NMEA_string, NMEA_sentence sentence);
+
+//serialize the NMEA_sentence into a string, make sure the string has enough space
+char* NMEA_serialize(NMEA_sentence words, char* serialized);
+
+//overwrites all the strings with zeroes
+void NMEA_sentence_empty(NMEA_sentence words);
 #endif /*NMRA_parse_h*/
