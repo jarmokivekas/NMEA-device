@@ -2,6 +2,7 @@
 #include <stm32f4xx_gpio.h>
 #include <misc.h>            // I recommend you have a look at these in the ST firmware folder
 #include <stm32f4xx_usart.h> // under Libraries/STM32F4xx_StdPeriph_Driver/inc and src
+#include <string.h>
 
 #include "NMEA_parse.h"
 #include "main.h"
@@ -28,13 +29,13 @@ int main(void) {
 	GPIOD->BSRRL = GPIO_Pin_15;
 
 
-	char recieved_string_copy[MAX_STRLEN];
+	char received_string_copy[MAX_STRLEN];
 	//wait for IRQ to happen until we can read a whole line
 	while (1){
 		if (IRQ_has_data){
 			//reset the notice flag
 			IRQ_has_data = 0;
-			strncpy(recieved_data, recieved_data_copy, MAX_SRTLEN);
+			strncpy(received_string, received_string_copy, MAX_STRLEN);
 			if(NMEA_validate(received_string_copy)){
 				NMEA_split_words(received_string_copy, NMEA_words);
 				// //add chars to make printing nice
