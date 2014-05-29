@@ -3,7 +3,9 @@
 #include <misc.h>            // I recommend you have a look at these in the ST firmware folder
 #include <stm32f4xx_usart.h> // under Libraries/STM32F4xx_StdPeriph_Driver/inc and src
 
-#define MAX_STRLEN 120 // this is the maximum string length of our string in characters
+#include "NMEA_parse.h"
+#include "main.h"
+
 volatile char received_string[MAX_STRLEN+1]; // this will hold the recieved string
 
 void Delay(__IO uint32_t nCount) {
@@ -137,16 +139,7 @@ int main(void) {
 	GPIOD->BSRRL = GPIO_Pin_13;
 	GPIOD->BSRRL = GPIO_Pin_14;
 	GPIOD->BSRRL = GPIO_Pin_15;
-	Delay(100000L);		 // wait a short period of time
-	while (1){  
-		GPIOD->BSRRH = GPIO_Pin_12; // set PD12 thru PD15
-		Delay(1000000L);		 // wait a short period of time
-		GPIOD->BSRRL = GPIO_Pin_12; // reset PD12 thru PD15
-		Delay(1000000L);		 // wait a short period of time
-
-		// /* Reset PD12*/
-		// GPIOD->BSRRH = GPIO_Pin_12;
-	}
+	while (1){}
 }
 
 // this is the interrupt request handler (IRQ) for ALL USART1 interrupts

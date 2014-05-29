@@ -2,3 +2,5 @@
 *.hex
 *.bin
 *.o
+NMEA-device.sublime-project
+NMEA-device.sublime-workspace
