@@ -6,7 +6,20 @@
 #include "NMEA_parse.h"
 #include "main.h"
 
-volatile char received_string[MAX_STRLEN+1]; // this will hold the recieved string
+char received_string[MAX_STRLEN+1]; // this will hold the recieved raw NMEA data
+char** NMEA_words;	// holds sructured and validated NMEA data
+
+int main(void) {
+	NMEA_words = NMEA_sentence_new();
+	init_GPIO();		//
+	init_USART1(4800);	// initialize USART1 @ 9600 baud
+
+	USART_puts(USART1, "Init complete!\r\n"); // just send a message to indicate that it works
+
+	GPIOD->BSRRL = GPIO_Pin_14;
+	GPIOD->BSRRL = GPIO_Pin_15;
+	while (1){}
+}
 
 void Delay(__IO uint32_t nCount) {
 	while(nCount--) {
@@ -119,31 +132,20 @@ void init_GPIO(){
  *         declared as volatile char --> otherwise the compiler will spit out warnings
  * */
  void USART_puts(USART_TypeDef* USARTx, volatile char *s){
-
+	GPIOD->BSRRL = USART_TX_LED;
 	while(*s){
 		// wait until data register is empty
 		while( !(USARTx->SR & 0x00000040) );
 		USART_SendData(USARTx, *s);
 		*s++;
 	}
+	GPIOD->BSRRH = USART_TX_LED;
 }
 
-int main(void) {
-	init_GPIO();
-	init_USART1(4800); // initialize USART1 @ 9600 baud
-
-	USART_puts(USART1, "Init complete!\r\n"); // just send a message to indicate that it works
-
-	/* Set PD12*/
-	GPIOD->BSRRL = GPIO_Pin_12;
-	GPIOD->BSRRL = GPIO_Pin_13;
-	GPIOD->BSRRL = GPIO_Pin_14;
-	GPIOD->BSRRL = GPIO_Pin_15;
-	while (1){}
-}
 
 // this is the interrupt request handler (IRQ) for ALL USART1 interrupts
 void USART1_IRQHandler(void){
+	GPIOD->BSRRL = USART_RX_LED;
 	
 	// check if the USART1 receive interrupt flag was set
 	if( USART_GetITStatus(USART1, USART_IT_RXNE) ){
@@ -159,11 +161,17 @@ void USART1_IRQHandler(void){
 			cnt++;
 		}
 		else{ // otherwise reset the character counter and print the received string
+			if(NMEA_validate(received_string)){
+				NMEA_split_words(received_string, NMEA_words);
+			}
+
+			// add chars to make printing nice
 			received_string[cnt++] = '\n';
 			received_string[cnt++] = '\r';
 			received_string[cnt] = 0x00;
-			cnt = 0;
 			USART_puts(USART1, received_string);
+			cnt = 0;
 		}
+	GPIOD->BSRRH = USART_RX_LED;
 	}
 }

@@ -7,3 +7,5 @@ void init_GPIO();
 void init_USART1(uint32_t baudrate);
 void USART_puts(USART_TypeDef* USARTx, volatile char *s);
 
+#define USART_RX_LED GPIO_Pin_12
+#define USART_TX_LED GPIO_Pin_13
