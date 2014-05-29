@@ -2,5 +2,10 @@
 *.hex
 *.bin
 *.o
+*.exe
 NMEA-device.sublime-project
 NMEA-device.sublime-workspace
+STM32f4_Discovery_pinout.png
+STM32F4_Discovery_pinout.xls
+projectlog.txt
+a.out
