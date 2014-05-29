@@ -9,10 +9,13 @@
 char received_string[MAX_STRLEN+1]; // this will hold the recieved raw NMEA data
 char** NMEA_words;	// holds sructured and validated NMEA data
 int IRQ_has_data ;
+int char_count; // this counter is used to determine the string length
 
 int main(void) {
 	NMEA_words = NMEA_sentence_new();
 	IRQ_has_data = 0;
+	char_count = 0;	
+
 	init_GPIO();		//
 	init_USART1(4800);	// initialize USART1 @ 4800 baud
 
@@ -24,19 +27,22 @@ int main(void) {
 	Delay(1000000L);
 	GPIOD->BSRRL = GPIO_Pin_15;
 
+
+	char recieved_string_copy[MAX_STRLEN];
+	//wait for IRQ to happen until we can read a whole line
 	while (1){
 		if (IRQ_has_data){
-			USART_puts(USART1, "#");
+			//reset the notice flag
 			IRQ_has_data = 0;
-			if(NMEA_validate(received_string)){
-				NMEA_split_words(received_string, NMEA_words);
+			strncpy(recieved_data, recieved_data_copy, MAX_SRTLEN);
+			if(NMEA_validate(received_string_copy)){
+				NMEA_split_words(received_string_copy, NMEA_words);
 				// //add chars to make printing nice
 				// received_string[cnt++] = '\n';
 				// received_string[cnt++] = '\r';
 				// received_string[cnt] = 0x00;
 				USART_puts(USART1, NMEA_words[1]/*received_string*/);
 				NMEA_sentence_empty(NMEA_words);
-
 			}
 		}
 	}
@@ -170,21 +176,19 @@ void USART1_IRQHandler(void){
 	
 	// check if the USART1 receive interrupt flag was set
 	if( USART_GetITStatus(USART1, USART_IT_RXNE) ){
-		static uint8_t cnt = 0; // this counter is used to determine the string length
-		char t = USART1->DR; // the character from the USART1 data register is saved in t
-		USART_SendData(USART1, t);
+		char t = USART1->DR; // the character from the USART1 data register is saved here
+		/*debug*/USART_SendData(USART1, t);
 		
 		/* check if the received character is not the LF character (used to determine end of string) 
 		 * or the if the maximum string length has been been reached 
 		 */
-		// if( (t != '\n') && (cnt < MAX_STRLEN - 3) ){ 
-		// 	received_string[cnt] = t;
-		// 	cnt++;
-		// }
-		// else{ // otherwise reset the character counter and print the received string
-		// 	IRQ_has_data = 1;
-		// 	cnt = 0;
-		// }
+		if( (t != '\n') && (char_count < MAX_STRLEN - 3) ){ 
+			received_string[char_count] = t;
+			char_count++;
+		}else{ // otherwise reset the character counter and print the received string
+			IRQ_has_data = 1;
+			char_count = 0;
+		}
 	GPIOD->BSRRH = USART_RX_LED;
 	}
 }
