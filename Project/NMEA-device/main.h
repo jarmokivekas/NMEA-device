@@ -9,3 +9,4 @@ void USART_puts(USART_TypeDef* USARTx, volatile char *s);
 
 #define USART_RX_LED GPIO_Pin_12
 #define USART_TX_LED GPIO_Pin_13
+#define ALL_LEDS GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15

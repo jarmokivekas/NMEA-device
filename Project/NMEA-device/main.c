@@ -8,17 +8,38 @@
 
 char received_string[MAX_STRLEN+1]; // this will hold the recieved raw NMEA data
 char** NMEA_words;	// holds sructured and validated NMEA data
+int IRQ_has_data ;
 
 int main(void) {
 	NMEA_words = NMEA_sentence_new();
+	IRQ_has_data = 0;
 	init_GPIO();		//
-	init_USART1(4800);	// initialize USART1 @ 9600 baud
+	init_USART1(4800);	// initialize USART1 @ 4800 baud
 
 	USART_puts(USART1, "Init complete!\r\n"); // just send a message to indicate that it works
 
-	GPIOD->BSRRL = GPIO_Pin_14;
+	GPIOD->BSRRL = ALL_LEDS;
+	Delay(1000000L);
+	GPIOD->BSRRH = ALL_LEDS;
+	Delay(1000000L);
 	GPIOD->BSRRL = GPIO_Pin_15;
-	while (1){}
+
+	while (1){
+		if (IRQ_has_data){
+			USART_puts(USART1, "#");
+			IRQ_has_data = 0;
+			if(NMEA_validate(received_string)){
+				NMEA_split_words(received_string, NMEA_words);
+				// //add chars to make printing nice
+				// received_string[cnt++] = '\n';
+				// received_string[cnt++] = '\r';
+				// received_string[cnt] = 0x00;
+				USART_puts(USART1, NMEA_words[1]/*received_string*/);
+				NMEA_sentence_empty(NMEA_words);
+
+			}
+		}
+	}
 }
 
 void Delay(__IO uint32_t nCount) {
@@ -149,29 +170,21 @@ void USART1_IRQHandler(void){
 	
 	// check if the USART1 receive interrupt flag was set
 	if( USART_GetITStatus(USART1, USART_IT_RXNE) ){
-		
 		static uint8_t cnt = 0; // this counter is used to determine the string length
 		char t = USART1->DR; // the character from the USART1 data register is saved in t
+		USART_SendData(USART1, t);
 		
 		/* check if the received character is not the LF character (used to determine end of string) 
 		 * or the if the maximum string length has been been reached 
 		 */
-		if( (t != '\n') && (cnt < MAX_STRLEN - 3) ){ 
-			received_string[cnt] = t;
-			cnt++;
-		}
-		else{ // otherwise reset the character counter and print the received string
-			if(NMEA_validate(received_string)){
-				NMEA_split_words(received_string, NMEA_words);
-			}
-
-			// add chars to make printing nice
-			received_string[cnt++] = '\n';
-			received_string[cnt++] = '\r';
-			received_string[cnt] = 0x00;
-			USART_puts(USART1, received_string);
-			cnt = 0;
-		}
+		// if( (t != '\n') && (cnt < MAX_STRLEN - 3) ){ 
+		// 	received_string[cnt] = t;
+		// 	cnt++;
+		// }
+		// else{ // otherwise reset the character counter and print the received string
+		// 	IRQ_has_data = 1;
+		// 	cnt = 0;
+		// }
 	GPIOD->BSRRH = USART_RX_LED;
 	}
 }
