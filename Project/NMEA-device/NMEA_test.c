@@ -1,5 +1,5 @@
-#include "NMEA_parse.c"
-
+#include "NMEA_parse.h"
+#include <stdio.h>
 int main(){
 	char tmp[100];
 

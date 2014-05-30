@@ -1,0 +1,22 @@
+CC=gcc
+CFLAGS=-c -Wall -g
+LFLAGS=-g
+
+SRC=\
+	./NMEA_parse.c\
+
+OBJ=$(SRC:%.c=%.o )
+
+all: test data_test
+
+data_test: OBJECTS
+	$(CC) $(LFLAGS) $(OBJ) NMEA_data_test.c -o NMEA_data_test.exe
+
+test: OBJECTS
+	$(CC) $(LFLAGS) $(OBJ) NMEA_test.c -o NMEA_test.exe
+
+OBJECTS: $(SRC)
+	$(CC) $(CFLAGS) $^
+
+clean:
+	rm -rf *.o *.exe

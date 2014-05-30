@@ -19,6 +19,11 @@
 #define GGA_STATION_ID 14
 #define GGA_CHECKSUM 15
 
+#define MAX_SENTENCE_LEN 20
+#define MAX_WORD_LEN 10
+#define NMEA_BUFFER_LEN 1024
+#define NMEA_SERIALIZED_LEN 120
+
 typedef char** NMEA_sentence;
 
 //destroys an NMEA_sentence
@@ -34,7 +39,7 @@ int NMEA_validate(char* NMEA_string);
 void NMEA_split_words(char* NMEA_string, NMEA_sentence sentence);
 
 //serialize the NMEA_sentence into a string, make sure the string has enough space
-char* NMEA_serialize(NMEA_sentence words, char* serialized);
+void NMEA_serialize(NMEA_sentence words, char* serialized);
 
 //overwrites all the strings with zeroes
 void NMEA_sentence_empty(NMEA_sentence words);
