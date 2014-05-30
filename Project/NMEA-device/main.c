@@ -3,13 +3,14 @@
 #include <misc.h>            // I recommend you have a look at these in the ST firmware folder
 #include <stm32f4xx_usart.h> // under Libraries/STM32F4xx_StdPeriph_Driver/inc and src
 #include <string.h>
+#include <stdio.h>
 
 #include "NMEA_parse.h"
 #include "main.h"
 
 char received_string[MAX_STRLEN+1]; // this will hold the recieved raw NMEA data
-char** NMEA_words;	// holds sructured and validated NMEA data
-int IRQ_has_data ;
+NMEA_sentence NMEA_words;	// holds sructured and validated NMEA data
+volatile int IRQ_has_data ;
 int char_count; // this counter is used to determine the string length
 
 int main(void) {
@@ -30,21 +31,28 @@ int main(void) {
 
 
 	char received_string_copy[MAX_STRLEN];
+	char serialized[MAX_STRLEN] = "dummy\r\n";
+	int i;
 	//wait for IRQ to happen until we can read a whole line
 	while (1){
 		if (IRQ_has_data){
 			//reset the notice flag
 			IRQ_has_data = 0;
-			strncpy(received_string, received_string_copy, MAX_STRLEN);
-			if(NMEA_validate(received_string_copy)){
-				NMEA_split_words(received_string_copy, NMEA_words);
-				// //add chars to make printing nice
-				// received_string[cnt++] = '\n';
-				// received_string[cnt++] = '\r';
-				// received_string[cnt] = 0x00;
-				USART_puts(USART1, NMEA_words[1]/*received_string*/);
-				NMEA_sentence_empty(NMEA_words);
-			}
+			for(i=0; i<MAX_STRLEN; i++)
+				received_string_copy[i] = received_string[i];
+			USART_puts(USART1, received_string_copy);
+			
+			//NMEA_validate(received_string_copy);
+			// if(NMEA_validate(received_string_copy)){
+			// 	//split, serialize, print, erease
+			// 	NMEA_split_words(received_string_copy, NMEA_words);
+			// 	//only send certain data
+			// 	if(strcmp(NMEA_words[0], "GPGSV")){
+			// 		NMEA_serialize_GSV(NMEA_words, serialized);
+			// 		USART_puts(USART1, serialized);
+			// 	}
+			// 	NMEA_sentence_empty(NMEA_words);
+			// }
 		}
 	}
 }
@@ -164,8 +172,8 @@ void init_GPIO(){
 	while(*s){
 		// wait until data register is empty
 		while( !(USARTx->SR & 0x00000040) );
-		USART_SendData(USARTx, *s);
-		*s++;
+			USART_SendData(USARTx, *s);
+			s++;
 	}
 	GPIOD->BSRRH = USART_TX_LED;
 }
@@ -174,22 +182,25 @@ void init_GPIO(){
 // this is the interrupt request handler (IRQ) for ALL USART1 interrupts
 void USART1_IRQHandler(void){
 	GPIOD->BSRRL = USART_RX_LED;
+	char tmp[10];
 	
 	// check if the USART1 receive interrupt flag was set
 	if( USART_GetITStatus(USART1, USART_IT_RXNE) ){
 		char t = USART1->DR; // the character from the USART1 data register is saved here
-		/*debug*/USART_SendData(USART1, t);
+		sprintf(tmp, "%c", t);
+		/*debug*///USART_puts(USART1, tmp);
 		
 		/* check if the received character is not the LF character (used to determine end of string) 
 		 * or the if the maximum string length has been been reached 
 		 */
-		if( (t != '\n') && (char_count < MAX_STRLEN - 3) ){ 
-			received_string[char_count] = t;
-			char_count++;
-		}else{ // otherwise reset the character counter and print the received string
+		received_string[char_count] = t;
+		char_count++;
+		if( (t == '\n') || (char_count < MAX_STRLEN - 3) ){
+			received_string[char_count] = 0x00;
 			IRQ_has_data = 1;
 			char_count = 0;
 		}
-	GPIOD->BSRRH = USART_RX_LED;
 	}
+	GPIOD->BSRRH = USART_RX_LED;
+	return;
 }

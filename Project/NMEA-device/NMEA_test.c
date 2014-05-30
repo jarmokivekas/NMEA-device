@@ -1,5 +1,5 @@
-#include "NMEA_parse.c"
-
+#include "NMEA_parse.h"
+#include <stdio.h>
 int main(){
 	char tmp[100];
 
@@ -22,6 +22,6 @@ int main(){
 		puts(tmp);
 	}
 	char serialized[100];
-	NMEA_serialize(words, serialized);
+	NMEA_serialize_GGA(words, serialized);
 	puts(serialized);
 }
