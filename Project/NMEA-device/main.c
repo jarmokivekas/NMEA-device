@@ -29,6 +29,7 @@ int main(void) {
 
 
 	char recieved_string_copy[MAX_STRLEN];
+	char serialized[MAX_STRLEN];
 	//wait for IRQ to happen until we can read a whole line
 	while (1){
 		if (IRQ_has_data){
@@ -36,12 +37,13 @@ int main(void) {
 			IRQ_has_data = 0;
 			strncpy(recieved_data, recieved_data_copy, MAX_SRTLEN);
 			if(NMEA_validate(received_string_copy)){
+				//split, serialize, print, erease
 				NMEA_split_words(received_string_copy, NMEA_words);
-				// //add chars to make printing nice
-				// received_string[cnt++] = '\n';
-				// received_string[cnt++] = '\r';
-				// received_string[cnt] = 0x00;
-				USART_puts(USART1, NMEA_words[1]/*received_string*/);
+				//only send certain data
+				if(strequ(NMEA_words[0], "GPGGA")){
+					NMEA_serialize_GSV(NMEA_split_words, serialized);
+					USART_puts(USART1, serialized);
+				}
 				NMEA_sentence_empty(NMEA_words);
 			}
 		}

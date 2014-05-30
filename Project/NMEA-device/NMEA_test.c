@@ -22,6 +22,6 @@ int main(){
 		puts(tmp);
 	}
 	char serialized[100];
-	NMEA_serialize(words, serialized);
+	NMEA_serialize_GGA(words, serialized);
 	puts(serialized);
 }

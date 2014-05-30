@@ -67,8 +67,38 @@ void NMEA_sentence_destroy(NMEA_sentence words){
 	free(words);
 }
 
-//serialize the NMEA_sentence into a string, make sure the string has enough space
-void NMEA_serialize(NMEA_sentence words, char* serialized){
+//serialize the NMEA_sentence into a string (GPGSV), make sure the string has enough space
+void NMEA_serialize_GSV(NMEA_sentence words, char* serialized){
+	sprintf(serialized,
+		"(%s/%s)\n%s %s %s %s\n%s %s %s %s\n%s %s %s %s\n%s %s %s %s\n",
+		words[2],
+		words[1],
+
+		words[4],
+		words[5],
+		words[6],
+		words[7],
+
+		words[8],
+		words[9],
+		words[10],
+		words[11],
+
+		words[12],
+		words[13],
+		words[14],
+		words[15],
+
+		words[16],
+		words[17],
+		words[18],
+		words[19]
+	);
+}
+
+
+//serialize the NMEA_sentence into a string (GPGAA), make sure the string has enough space
+void NMEA_serialize_GGA(NMEA_sentence words, char* serialized){
 	sprintf(serialized,
 		"%s %s\n%s %s",
 		words[GGA_LAT],

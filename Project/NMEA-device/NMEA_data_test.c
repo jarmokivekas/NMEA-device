@@ -5,7 +5,8 @@ void do_a_print(char* NMEA_string);
 NMEA_sentence words;
 FILE* raw_data;
 int main(){
-	raw_data = fopen("/home/juha/Documents/Ell-i_hackathon/data", "r");
+	//raw_data = fopen("/home/juha/Documents/Ell-i_hackathon/data", "r");
+	raw_data = fopen("./NMEA_example_data", "r");
 	if (raw_data==NULL) perror ("Error opening file");
 	words = NMEA_sentence_new();
 	char received_string[MAX_STRLEN];
@@ -31,10 +32,9 @@ void do_a_print(char* NMEA_string){
 		//printf("NMEA data is bad\n");
 		return;
 	}
-	NMEA_sentence_empty(words);
 	NMEA_split_words(NMEA_string, words);
 	//printf("%s\n", words[0]);
-	if(!strcmp(words[0], "GPGGA")){
+	if(!strcmp(words[0], "GPGSV")){
 
 		/*
 		int i;
@@ -44,8 +44,9 @@ void do_a_print(char* NMEA_string){
 		*/
 
 		char serialized[100];
-		NMEA_serialize(words, serialized);
+		NMEA_serialize_GSV(words, serialized);
 		puts(serialized);
 	}
+	NMEA_sentence_empty(words);
 }
 

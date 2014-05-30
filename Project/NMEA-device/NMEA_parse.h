@@ -39,7 +39,10 @@ int NMEA_validate(char* NMEA_string);
 void NMEA_split_words(char* NMEA_string, NMEA_sentence sentence);
 
 //serialize the NMEA_sentence into a string, make sure the string has enough space
-void NMEA_serialize(NMEA_sentence words, char* serialized);
+void NMEA_serialize_GGA(NMEA_sentence words, char* serialized);
+
+//serialize the NMEA_sentence into a string, make sure the string has enough space
+void NMEA_serialize_GSV(NMEA_sentence words, char* serialized);
 
 //overwrites all the strings with zeroes
 void NMEA_sentence_empty(NMEA_sentence words);
