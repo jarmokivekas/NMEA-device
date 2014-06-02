@@ -166,7 +166,7 @@ void init_GPIO(){
 		// wait until data register is empty
 		while( !(USARTx->SR & 0x00000040) );
 		USART_SendData(USARTx, *s);
-		*s++;
+		s++;
 	}
 	GPIOD->BSRRH = USART_TX_LED;
 }
