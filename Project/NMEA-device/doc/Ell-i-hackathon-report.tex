@@ -1,0 +1,119 @@
+
+
+\documentclass[paper=a4, fontsize=12pt]{article} % A4 paper and 11pt font size
+
+\usepackage[latin9, utf8]{inputenc} % Use 8-bit encoding that has 256 glyphs
+% \usepackage{fourier} % Use the Adobe Utopia font for the document - comment this line to return to the LaTeX default
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage{amsmath,amsfonts,amsthm} % Math packages
+\usepackage{graphicx}
+\usepackage{setspace}
+
+\usepackage{sectsty} % Allows customizing section commands
+\allsectionsfont{\normalfont\scshape} % Make all sections centered, the default font and small caps
+
+\usepackage{fancyhdr} % Custom headers and footers
+\pagestyle{fancyplain} % Makes all pages in the document conform to the custom headers and footers
+\fancyhead{} % No page header - if you want one, create it in the same way as the footers below
+\fancyfoot[L]{NMEA data aggregator} % Empty left footer
+\fancyfoot[C]{} % Empty center footer
+\fancyfoot[R]{\thepage} % Page numbering for right footer
+\renewcommand{\headrulewidth}{0pt} % Remove header underlines
+\renewcommand{\footrulewidth}{0pt} % Remove footer underlines
+\setlength{\headheight}{13.6pt} % Customize the height of the header
+
+\numberwithin{equation}{section}
+\numberwithin{figure}{section}
+\numberwithin{table}{section}
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs - comment this line for an assignment with lots of text
+% \tolerance=1200
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} % Create horizontal rule command with 1 argument of height
+
+\title{	
+\normalfont \normalsize 
+\textsc{} \\ [25pt] % Your university, school and/or department name(s)
+\horrule{0.5pt} \\[0.4cm] % Thin top horizontal rule
+\huge NMEA data aggregator hackathon project \\ % The assignment title
+\horrule{0.5pt} \\[0.5cm] % Thick bottom horizontal rule
+}
+
+\author{Jarmo Kivekäs} % Your name
+
+\date{\normalsize\today} % Today's date or a custom date
+
+\begin{document}
+
+\maketitle % Print the title
+
+% NMEA
+% JSON
+% ip
+% ST 
+\tableofcontents
+
+
+\section{Introduction} % (fold)
+\label{sec:introduction}
+
+The prototype for the NMEA data aggregator project was created during the course of the Ell-i Bare Metal Hackathon event by a team of 2 people, with some additional assistance form a third participant.
+
+% section introduction (end)
+
+\section{Design Goals} % (fold)
+\label{sec:reasoning_and_goals}
+
+The goal for the project was to develop a device based on the STM32F407-Discovery board which is able to receive data over the NMEA protocol, validate and parse the given data into a well-defined data structure and finally pass the structured data to an application running on a PC. JSON was chosen as the format to be used when sending data to the PC, since it is widely supported in many higher-level languages. As the hackathon event had an internet of things theme, the preferred way to implement communication between the microcontroller and PC would have been using an ip stack over wired ethernet.
+
+% section reasoning_and_goals (end)
+\section{Decription} % (fold)
+\label{sec:decription}
+
+The state of the project after the hackathon 
+
+A simpler serial connection is used to communicate to the PC instead of wired ethernet because of technical problems with compiling the networking stack in the libraries provided by ST. Due to the 48h time constraint at the hackathon event there was not enough time to properly troubleshoot the problem with the networking stack.
+
+% section decription (end)
+
+\subsection{Hardware} % (fold)
+\label{sec:hardware}
+
+% \cite{RS-232}
+
+
+% section hardware (end)
+
+
+\subsection{Firmware} % (fold)
+\label{sec:firmware}
+
+Interfacing with the USART and GPIO hardware of the microcontroller is done using the hardware abstraction layer (HAL) libraries provided by ST. All functionality pertaining to the NMEA data received by the microcontroller is provided by a custom library that was implemented as a part of the project. The NMEA 
+
+
+\subsection{Program Flow} % (fold)
+\label{sub:overview}
+
+On a high level, the program consists of a loop which waits for a flag that indicates that newly received NMEA data is available to be set by an external interrupt service routine (ISR). Once the flag is set, the program clears the flag, parses, validates and structures the received data. After the data has been properly formatted, it's transmitted to a computer over a serial connection and the program resumes waiting for the flag to be set again by the ISR.
+
+The ISR that sets the flag mentioned above is triggered by the USART hardware on the STM32F4 when new data is received on one of its serial interfaces. Received data is read into a buffer until a newline character is received, after which the flag is set in order to indicate to the main program loop that new data is available for processing.
+
+
+
+\section{Further development} % (fold)
+\label{sec:further_areas_of_development}
+
+% section further_areas_of_development (end)
+
+\section{Conclusion} % (fold)
+\label{sec:conclusion}
+
+% section conclusion (end)
+
+
+\end{document}
+
+EIA standard RS-232-C: Interface between Data Terminal Equipment and Data Communication Equipment Employing Serial Binary Data Interchange. Washington: Electronic Industries Association. Engineering Dept. 1969.
