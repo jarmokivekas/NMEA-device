@@ -38,21 +38,17 @@ int main(void) {
 		if (IRQ_has_data){
 			//reset the notice flag
 			IRQ_has_data = 0;
-			for(i=0; i<MAX_STRLEN; i++)
-				received_string_copy[i] = received_string[i];
-			USART_puts(USART1, received_string_copy);
-			
-			//NMEA_validate(received_string_copy);
-			// if(NMEA_validate(received_string_copy)){
-			// 	//split, serialize, print, erease
-			// 	NMEA_split_words(received_string_copy, NMEA_words);
-			// 	//only send certain data
-			// 	if(strcmp(NMEA_words[0], "GPGSV")){
-			// 		NMEA_serialize_GSV(NMEA_words, serialized);
-			// 		USART_puts(USART1, serialized);
-			// 	}
-			// 	NMEA_sentence_empty(NMEA_words);
-			// }
+			strncpy(recieved_data, recieved_data_copy, MAX_SRTLEN);
+			if(NMEA_validate(received_string_copy)){
+				//split, serialize, print, erease
+				NMEA_split_words(received_string_copy, NMEA_words);
+				//only send certain data
+				if(strequ(NMEA_words[0], "GPGGA")){
+					NMEA_serialize_GSV(NMEA_split_words, serialized);
+					USART_puts(USART1, serialized);
+				}
+				NMEA_sentence_empty(NMEA_words);
+			}
 		}
 	}
 }
@@ -172,8 +168,8 @@ void init_GPIO(){
 	while(*s){
 		// wait until data register is empty
 		while( !(USARTx->SR & 0x00000040) );
-			USART_SendData(USARTx, *s);
-			s++;
+		USART_SendData(USARTx, *s);
+		*s++;
 	}
 	GPIOD->BSRRH = USART_TX_LED;
 }

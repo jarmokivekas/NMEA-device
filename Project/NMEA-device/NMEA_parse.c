@@ -53,8 +53,11 @@ NMEA_sentence NMEA_sentence_new(){
 //overwrites all the strings with zeroes
 void NMEA_sentence_empty(NMEA_sentence words){
 	int i;
+	int j;
 	for(i=0; i<MAX_SENTENCE_LEN; i++){
-		memset(words[i], 0x00, MAX_WORD_LEN * sizeof(char));
+		for(j=0; j<MAX_WORD_LEN; j++){
+			words[i][j] = 0x00;
+		}
 	}
 }
 
